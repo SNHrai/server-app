@@ -8,8 +8,6 @@ import org.springframework.stereotype.Repository;
 import com.jewellery.server_app.model.Role;
 
 @Repository
-public interface RoleRepository extends JpaRepository<Role, Long>{
-
-    Optional<Role> findByName(String string);
-    
+public interface RoleRepository extends JpaRepository<Role, Long> {
+    Optional<Role> findByName(String name);
 }

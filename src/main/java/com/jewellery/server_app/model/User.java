@@ -18,6 +18,8 @@ import java.util.Set;
 @Table(name = "users")
 public class User {
 
+   
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -43,6 +45,14 @@ public class User {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles;
+
+
+    public User(String firstName2, String lastName2, String email2) {
+        this.firstName = firstName2;
+        this.lastName = lastName2;
+        this.email = email2;
+    }
+
 
   
 }
