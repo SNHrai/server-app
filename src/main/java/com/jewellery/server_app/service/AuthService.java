@@ -37,4 +37,8 @@ public class AuthService {
   public Optional<User> getUserByEmail(String email) {
     return userRepository.findByEmail(email);
   }
+
+  public Optional<User> getUserByEmailOrPhoneNumber(String phoneNumber) {
+    return userRepository.getUserByEmailOrPhoneNumber(phoneNumber);
+  }
 }

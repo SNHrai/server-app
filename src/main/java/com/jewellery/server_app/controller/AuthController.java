@@ -142,17 +142,13 @@ public class AuthController {
           case "admin":
             Role adminRole = roleRepository
               .findByName(ERole.ROLE_ADMIN.name())
-              .orElseThrow(() ->
-                new RuntimeException("Role is not found.")
-              );
+              .orElseThrow(() -> new RuntimeException("Role is not found."));
             roles.add(adminRole);
             break;
           default:
             Role userRole = roleRepository
               .findByName(ERole.ROLE_USER.name())
-              .orElseThrow(() ->
-                new RuntimeException("Role is not found.")
-              );
+              .orElseThrow(() -> new RuntimeException("Role is not found."));
             roles.add(userRole);
         }
       });
@@ -194,28 +190,24 @@ public class AuthController {
 
   @PostMapping("/google-login")
   public ResponseEntity<?> googleLogin(
-    @RequestBody GoogleAuthRequest googleAuthRequest,
-    Authentication authentication,
-    HttpServletRequest request
+    @RequestBody GoogleAuthRequest googleAuthRequest
   ) {
     try {
-      Payload payload = verifyGoogleIdToken(googleAuthRequest.getIdToken());
-      String email = payload.getEmail();
+      String email = googleAuthRequest.getEmail();
 
       User user = authService
         .getUserByEmail(email)
         .orElseGet(() -> {
           User newUser = new User();
           newUser.setEmail(email);
-          newUser.setFirstName((String) payload.get("given_name"));
-          newUser.setLastName((String) payload.get("family_name"));
+          newUser.setFirstName(googleAuthRequest.getFirstName());
+          newUser.setLastName(googleAuthRequest.getLastName());
+          // newUser.setProfilePic(googleAuthRequest.getProfilePic());
           newUser.setRoles(
             Collections.singleton(
               roleRepository
                 .findByName(ERole.ROLE_USER.name())
-                .orElseThrow(() ->
-                  new RuntimeException("Role is not found.")
-                )
+                .orElseThrow(() -> new RuntimeException("Role is not found."))
             )
           );
           return authService.saveUser(newUser);
@@ -232,9 +224,6 @@ public class AuthController {
       SecurityContextHolder.getContext().setAuthentication(auth);
       String jwt = jwtUtils.generateJwtToken(auth);
 
-      // List<String> roles = userDetails.getAuthorities().stream()
-      //         .map(GrantedAuthority::getAuthority)
-      //         .collect(Collectors.toList());
       List<String> userRoles = userDetails
         .getAuthorities()
         .stream()
@@ -248,14 +237,14 @@ public class AuthController {
         user.getLastName(),
         user.getProfession(),
         user.getCountry(),
-        userRoles // Pass roles as a List<String>
+        userRoles
       );
 
       return ResponseEntity.ok(jwtResponse);
-    } catch (GeneralSecurityException | IOException e) {
+    } catch (Exception e) {
       return ResponseEntity
         .badRequest()
-        .body(new MessageResponse("Invalid Google ID token."));
+        .body(new MessageResponse("Error processing Google login."));
     }
   }
 
@@ -272,6 +261,7 @@ public class AuthController {
     if (idToken != null) {
       return idToken.getPayload();
     } else {
+      System.out.println("Token verification failed.");
       throw new GeneralSecurityException("Invalid ID token.");
     }
   }
